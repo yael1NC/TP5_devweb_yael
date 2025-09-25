@@ -1,5 +1,9 @@
-# 1.1
-```txt
+# Serveur HTTP & Express
+
+## Partie 1 - Serveur HTTP natif Node.js
+
+### 1.1 Réponse HTTP basique
+```http
 HTTP/1.1 200 OK
 Date: Fri, 19 Sep 2025 22:37:43 GMT
 Connection: keep-alive
@@ -7,8 +11,8 @@ Keep-Alive: timeout=5
 Transfer-Encoding: chunked
 ```
 
-# 1.2
-```txt
+### 1.2 Réponse avec Content-Type JSON
+```http
 HTTP/1.1 200 OK
 Content-Type: application/json
 Date: Fri, 19 Sep 2025 22:55:09 GMT
@@ -17,25 +21,23 @@ Keep-Alive: timeout=5
 Content-Length: 20
 ```
 
-# 1.3
+### 1.3 Gestion d'erreur fichier manquant
+Le fichier `index.html` n'existe pas, une erreur est affichée dans la console du serveur et le client ne recevra pas de réponse.
 
-Le fichier index.html n'existe pas, une erreur est affichée dans la console du serveur et le client ne recevra pas de réponse 
-
-# 1.4
-```js
+### 1.4 Message d'erreur système
+```javascript
 Error: ENOENT: no such file or directory, open 'index.html'
-    at async open (node:internal/fs/promises:642:25)
-    at async Object.readFile (node:internal/fs/promises:1279:14) {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: 'index.html'
+ at async open (node:internal/fs/promises:642:25)
+ at async Object.readFile (node:internal/fs/promises:1279:14) {
+ errno: -2,
+ code: 'ENOENT',
+ syscall: 'open',
+ path: 'index.html'
 }
 ```
 
-# 1.5
-
-```js
+### 1.5 Serveur avec gestion d'erreurs
+```javascript
 import http from "node:http";
 import fs from "node:fs/promises";
 
@@ -61,63 +63,47 @@ server.listen(port, host, () => {
 });
 ```
 
-# 1.6 
+### 1.6 Installations npm
+Le fichier `package.json` :
+- Ajout de `cross-env` dans les dependencies
+- Ajout de `nodemon` dans les devDependencies
+- Création du dossier `node_modules/` avec les packages installés
+- Création du fichier `package-lock.json` qui verrouille les versions exactes des dépendances
 
-Le fichier package.json :
+### 1.7 Modes d'exécution
+- **Mode développement** : Idéal pour coder car le serveur redémarre automatiquement à chaque modification
+- **Mode production** : Optimisé pour la performance, sans surveillance inutile des fichiers
 
-Ajout de cross-env dans les dependencies
-Ajout de nodemon dans les devDependencies
+### 1.8 Tests d'URLs
+| URL | Status |
+|-----|--------|
+| `http://localhost:8000/index.html` | 200 |
+| `http://localhost:8000/random.html` | 200 |
+| `http://localhost:8000/` | 404 |
+| `http://localhost:8000/dont-exist` | 404 |
 
-Création du dossier node_modules/ avec les packages installés
+---
 
-Création du fichier package-lock.json qui verrouille les versions exactes des dépendances
+## Partie 2 - Serveur Express
 
-# 1.7
+### 2.1 Dépendances utilisées
+- **express** : https://expressjs.com/
+- **http-errors** : https://github.com/jshttp/http-errors#readme
+- **loglevel** : https://github.com/pimterry/loglevel#readme
+- **morgan** : https://github.com/expressjs/morgan#readme
 
-Mode développement : Idéal pour coder car le serveur redémarre automatiquement à chaque modification
+### 2.2 Captures d'écran
+![Interface principale](image.png)
 
-Mode production : Optimisé pour la performance, sans surveillance inutile des fichiers
+![Page d'exemple](image-1.png)
 
-# 1.8
+![Gestion d'erreur](image-2.png)
 
-http://localhost:8000/index.html
-200
+### 2.3 En-têtes de réponse
 
-http://localhost:8000/random.html
-200 
-
-http://localhost:8000/
-404
-
-http://localhost:8000/dont-exist
-404
-
-
-# Partie 2 
-
-# 2.1
-
-express : https://expressjs.com/
-
-http-errors : https://github.com/jshttp/http-errors#readme
-
-loglevel : https://github.com/pimterry/loglevel#readme
-
-morgan : https://github.com/expressjs/morgan#readme
-
-# 2.2
-
-![alt text](image.png)
-
-![alt text](image-1.png)
-
-![alt text](image-2.png)
-
-# 2.3
-
-http://localhost:8000/
-```txt
-HTTP/1.1 304 Not Modified \n
+#### `http://localhost:8000/`
+```http
+HTTP/1.1 304 Not Modified
 X-Powered-By: Express
 Accept-Ranges: bytes
 Cache-Control: public, max-age=0
@@ -128,8 +114,8 @@ Connection: keep-alive
 Keep-Alive: timeout=5
 ```
 
-http://localhost:8000/index.html
-```txt
+#### `http://localhost:8000/index.html`
+```http
 HTTP/1.1 304 Not Modified
 X-Powered-By: Express
 Accept-Ranges: bytes
@@ -141,8 +127,8 @@ Connection: keep-alive
 Keep-Alive: timeout=5
 ```
 
-http://localhost:8000/random/5
-```txt
+#### `http://localhost:8000/random/5`
+```http
 HTTP/1.1 200 OK
 X-Powered-By: Express
 Content-Type: text/html; charset=utf-8
@@ -153,32 +139,37 @@ Connection: keep-alive
 Keep-Alive: timeout=5
 ```
 
-# 2.4
+### 2.4 Événement `listening`
+L'événement `listening` se déclenche de manière asynchrone une fois que :
+- Le port est disponible
+- Le serveur est effectivement en écoute
+- Il peut accepter des connexions entrantes
 
-Événement listening : Se déclenche de manière asynchrone une fois que :
+### 2.5 Middleware `express.static()`
+L'option activée par défaut dans le middleware `express.static()` est **`index`**.
 
-Le port est disponible
+Cette option a la valeur par défaut `["index.html"]` et permet de servir automatiquement le fichier `index.html` quand on accède à la racine `/` d'un répertoire.
 
-Le serveur est effectivement en écoute
+### 2.6 Cache navigateur
+- **Ctrl + R** : `304` = Optimisation, pas de transfert de données, utilisation du cache
+- **Ctrl + Shift + R** : `200` forcé = Bypass du cache, re-téléchargement complet du fichier
 
-Il peut accepter des connexions entrantes
+### 2.7 Gestion des erreurs selon l'environnement
+Il y a bien un changement entre les deux modes :
+- **Mode développement** : L'erreur est écrite au complet
+- **Mode production** : L'erreur n'est pas complète (sécurité)
 
-# 2.5
-L'option activée par défaut dans le middleware express.static() est index.
+---
 
-Cette option a la valeur par défaut ["index.html"] et permet de servir automatiquement le fichier index.html quand on accède à la racine / d'un répertoire.
+## Installation et utilisation
 
-# 2.6
+```bash
+# Installation des dépendances
+npm install
 
-Ctrl + R : 304 = Optimisation : pas de transfert de données, utilisation du cache
-Ctrl + Shift + R 200 forcé = Bypass du cache : re-téléchargement complet du fichier
+# Mode développement
+npm run dev
 
-# 2.7
-
-Il y a bien un changement entre les deux modes.
-
-En mode developpement, l'erreur est écrite au complet.
-
-Alors qu'en mode production, l'erreur n'est pas complète.
-
-
+# Mode production
+npm start
+```
